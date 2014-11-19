@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -37,7 +38,7 @@ public class ClippingBasicFragment extends Fragment {
     private int mClickCount = 0;
 
     /* The {@Link Outline} used to clip the image with. */
-    private Outline mClip;
+    private ViewOutlineProvider mOutlineProvider;
 
     /* An array of texts. */
     private String[] mSampleTexts;
@@ -49,7 +50,7 @@ public class ClippingBasicFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mClip = new Outline();
+        mOutlineProvider = new ClipOutlineProvider();
         mSampleTexts = getResources().getStringArray(R.array.sample_texts);
     }
 
@@ -67,35 +68,28 @@ public class ClippingBasicFragment extends Fragment {
         mTextView = (TextView) view.findViewById(R.id.text_view);
         changeText();
 
+
+        final View clippedView = view.findViewById(R.id.frame);
+
+        /* Sets the OutlineProvider for the View. */
+        clippedView.setOutlineProvider(mOutlineProvider);
+
         /* When the button is clicked, the text is clipped or un-clipped. */
         view.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View bt) {
-
-                View clippedView = view.findViewById(R.id.frame);
-
-                /* The view is already clipped if {Link View#getClipToOutline()} returns true. */
+                // Toggle whether the View is clipped to the outline
                 if (clippedView.getClipToOutline()) {
                     /* The Outline is set for the View, but disable clipping. */
                     clippedView.setClipToOutline(false);
 
-                    Log.d(TAG, String.format("Clipping was removed."));
+                    Log.d(TAG, String.format("Clipping to outline is disabled"));
                     ((Button) bt).setText(R.string.clip_button);
-
                 } else {
-                    /*
-                    Sets the dimensions and shape of the {@Link Outline}. A rounded rectangle
-                    with a margin determined by the width or height.
-                    */
-                    int margin = Math.min(clippedView.getWidth(), clippedView.getHeight()) / 10;
-                    mClip.setRoundRect(margin, margin, clippedView.getWidth() - margin,
-                            clippedView.getHeight() - margin, margin / 2);
-                    /* Sets the Outline of the View. */
-                    clippedView.setOutline(mClip);
                     /* Enables clipping on the View. */
                     clippedView.setClipToOutline(true);
 
-                    Log.d(TAG, String.format("View was clipped."));
+                    Log.d(TAG, String.format("Clipping to outline is enabled"));
                     ((Button) bt).setText(R.string.unclip_button);
                 }
             }
@@ -106,20 +100,40 @@ public class ClippingBasicFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 mClickCount++;
+
+                // Update the text in the TextView
                 changeText();
+
+                // Invalidate the outline just in case the TextView changed size
+                clippedView.invalidateOutline();
             }
         });
     }
 
     private void changeText() {
-        /*
-        Compute the position of the string in the array using the number of strings
-        and the number of clicks.
-        */
+        // Compute the position of the string in the array using the number of strings
+        //  and the number of clicks.
         String newText = mSampleTexts[mClickCount % mSampleTexts.length];
 
         /* Once the text is selected, change the TextView */
         mTextView.setText(newText);
         Log.d(TAG, String.format("Text was changed."));
+
+
+    }
+
+    /**
+     * A {@link ViewOutlineProvider} which clips the view with a rounded rectangle which is inset
+     * by 10%
+     */
+    private class ClipOutlineProvider extends ViewOutlineProvider {
+
+        @Override
+        public void getOutline(View view, Outline outline) {
+            final int margin = Math.min(view.getWidth(), view.getHeight()) / 10;
+            outline.setRoundRect(margin, margin, view.getWidth() - margin,
+                    view.getHeight() - margin, margin / 2);
+        }
+
     }
 }
