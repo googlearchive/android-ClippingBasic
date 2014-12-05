@@ -5,8 +5,12 @@
 ---
 status:       PUBLISHED
 technologies: [Android]
-categories:   [UI]
+categories:   [UI Views]
 languages:    [Java]
 solutions:    [Mobile]
 github:       android-ClippingBasic
+level:        BEGINNER
+icon:         screenshots/web-icon.png
+apiRefs:
+    - android:android.view.ViewOutlineProvider
 license: apache2
