@@ -16,7 +16,7 @@ This example clips the outline of a View as a rounded rectangle by defining a cl
  implements ViewOutlineProvider by following code:
 
 ```java
-private class ClipOutlineProvider extends ViewOutlineProvider {
+private static class ClipOutlineProvider extends ViewOutlineProvider {
     @Override
     public void getOutline(View view, Outline outline) {
         final int margin = Math.min(view.getWidth(), view.getHeight()) / 10;
